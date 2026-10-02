@@ -9,7 +9,7 @@ from that release; Docker and Make will be needed for M1.
 Before editing, run:
 
 ```sh
-agent-docs preflight --intent project-dev
+agent-docs --docs-home "$PWD" preflight --intent project-dev
 ```
 
 Before PR delivery, run:
