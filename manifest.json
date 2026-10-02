@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "platform": "linux/amd64",
+  "base_image": "ubuntu:24.04@sha256:f610ab94648195aa356059f5b41d6085c9d4d903c072430cdd1af7bdb646106b",
+  "ubuntu_snapshot": "20261001T000000Z",
+  "components": {
+    "nils-cli": {
+      "version": "1.31.13",
+      "url": "https://github.com/sympoies/nils-cli/releases/download/v1.31.13/nils-cli-v1.31.13-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "b1be0e440aafefd91157b9d9c1d3675c4aa6e4957d8a146b4cc73014a116b74e"
+    },
+    "node": {
+      "version": "26.10.0",
+      "url": "https://nodejs.org/dist/v26.10.0/node-v26.10.0-linux-x64.tar.xz",
+      "sha256": "ca70e9e349de048b9522abb3adc05b3bd6f43c5ffd3ec57916c7da292f59f022"
+    },
+    "bun": {
+      "version": "1.4.2",
+      "url": "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64.zip",
+      "sha256": "36368faef7527875d5ffa52e53cd48021741f2a83eb6208a8dd64068d422a913"
+    },
+    "codex": {
+      "version": "0.160.0",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.160.0/codex-x86_64-unknown-linux-musl.tar.gz",
+      "sha256": "306865417d4ee7a927785852910a527f41e1e159add390ac5ae3accb67d44a13"
+    },
+    "claude-code": {
+      "version": "2.1.288",
+      "url": "https://registry.npmjs.org/@anthropic-ai/claude-code-linux-x64/-/claude-code-linux-x64-2.1.288.tgz",
+      "sha256": "b54d6a2c6bdd78f2c83139d1223598641686aab9e562c47cf537dd200653fa90"
+    },
+    "tmux": {
+      "version": "3.4",
+      "url": "https://github.com/tmux/tmux/releases/download/3.4/tmux-3.4.tar.gz",
+      "sha256": "551ab8dea0bf505c0ad6b7bb35ef567cdde0ccb84357df142c254f35a23e19aa"
+    },
+    "python": {
+      "version": "3.12.3",
+      "url": "https://www.python.org/ftp/python/3.12.3/Python-3.12.3.tar.xz",
+      "sha256": "56bfef1fdfc1221ce6720e43a661e3eb41785dd914ce99698d8c7896af4bdaa1"
+    },
+    "agent-runtime-kit": {
+      "version": "f24ea7b9f55fd3346f0e4535c3384af7fe083d9e",
+      "url": "https://codeload.github.com/sympoies/agent-runtime-kit/tar.gz/f24ea7b9f55fd3346f0e4535c3384af7fe083d9e",
+      "sha256": "6902b821f82fa8aeea4679d3d4a2d563e3ce5374cdfcdb30036913d42e2040ed",
+      "repository": "https://github.com/sympoies/agent-runtime-kit.git"
+    },
+    "dsh-runtime-kit": {
+      "version": "3b822a93e7a5a6ff2df93fbb9b3855f0122fbbc9",
+      "url": "https://codeload.github.com/sympoies/dsh-runtime-kit/tar.gz/3b822a93e7a5a6ff2df93fbb9b3855f0122fbbc9",
+      "sha256": "3b4f3d6c00b1014519418c3d08410c47c9eafd842431d477c19e10a5d8da098f",
+      "repository": "https://github.com/sympoies/dsh-runtime-kit.git"
+    },
+    "dsh-workbench": {
+      "version": "0.2.2",
+      "url": "https://github.com/sympoies/dsh-workbench/releases/download/v0.2.2/dsh-workbench-linux-x64-0.2.2.tar.gz",
+      "sha256": "6a728f315534c65790894e654f7acf3a6c3b3e40c39a92cd1cf10af0de214e38",
+      "manifest_sha256": "e0d5e396e2d5e12685f95fe3b535b23969de696caed960f94578c822014afa9f",
+      "source": {
+        "version": "6686a24d9b436ed9b416d725a971abd3251b63fb",
+        "repository": "https://github.com/sympoies/dsh-workbench.git",
+        "url": "https://codeload.github.com/sympoies/dsh-workbench/tar.gz/6686a24d9b436ed9b416d725a971abd3251b63fb",
+        "sha256": "244674cc88fbe24c22de3056bfea92eb56343b94f4bb7d8d47667b22a8698172"
+      }
+    },
+    "zsh-kit": {
+      "version": "2b85a32c78128df998981b50ffe041fae81771eb",
+      "repository": "https://github.com/sympoies/zsh-kit.git",
+      "url": "https://codeload.github.com/sympoies/zsh-kit/tar.gz/2b85a32c78128df998981b50ffe041fae81771eb",
+      "sha256": "6ab7b2dbd0fd39065dbfb416f5fd390669766573f25c11cf98ce10ab742dae46"
+    }
+  },
+  "build_tools": {
+    "pnpm": {
+      "version": "11.24.0",
+      "url": "https://registry.npmjs.org/pnpm/-/pnpm-11.24.0.tgz",
+      "sha256": "d1eab2433172661cc36a18ec85fce93f771db1962717329cc01ec9c2824ca24f"
+    },
+    "ca-certificates": {
+      "version": "20260601~24.04.1",
+      "url": "https://snapshot.ubuntu.com/ubuntu/20261001T000000Z/pool/main/c/ca-certificates/ca-certificates_20260601~24.04.1_all.deb",
+      "sha256": "6bac2a01979e210d9eac1d4d56747ec709ea60654744d66705dc3c36e7629e50"
+    }
+  }
+}

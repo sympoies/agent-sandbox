@@ -1,0 +1,29 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  repository-conventions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install the pinned validation tools
+        shell: bash
+        run: |
+          archive="$RUNNER_TEMP/nils-cli.tar.gz"
+          url=$(python3 -c 'import json; print(json.load(open("manifest.json"))["components"]["nils-cli"]["url"])')
+          checksum=$(python3 -c 'import json; print(json.load(open("manifest.json"))["components"]["nils-cli"]["sha256"])')
+          curl --fail --location --retry 3 --silent --show-error "$url" -o "$archive"
+          printf '%s  %s\n' "$checksum" "$archive" | sha256sum --check --strict
+          mkdir "$RUNNER_TEMP/nils-cli"
+          tar -xzf "$archive" --strip-components=1 -C "$RUNNER_TEMP/nils-cli"
+          echo "$RUNNER_TEMP/nils-cli/bin" >> "$GITHUB_PATH"
+      - name: Repository conventions
+        run: .agents/scripts/pre-pr.sh

@@ -1,0 +1,21 @@
+[[document]]
+context = "project-dev"
+scope = "project"
+path = "DEVELOPMENT.md"
+required = true
+when = "always"
+notes = "Contributor setup, pin ownership, validation, and delivery boundaries."
+
+[[document]]
+context = "project-dev"
+scope = "project"
+path = "docs/devlog/README.md"
+required = false
+when = "always"
+notes = "Development history; read when recording a completed change."
+
+[[validation]]
+context = "project-dev"
+commands = [".agents/scripts/pre-pr.sh"]
+marker = ".cache/agent-validation/project-dev.ok"
+description = "Validate development-log structure, project documentation, and manifest syntax."
