@@ -62,14 +62,18 @@ def entry(repo, slug, day="2001-01-01"):
            "--evidence", "Local bare-remote scenario.")
 
 
-def check(repo):
+def check_result(repo, *args):
     if KIT:
         env = {**os.environ, "DEVLOG_CHECK_BASE": "origin/main"}
         result = subprocess.run(["bash", str(Path(KIT) / "scripts/ci/devlog-check.sh"),
-                                 "--format", "json"], cwd=repo, env=env,
+                                 "--format", "json", *args], cwd=repo, env=env,
                                 text=True, capture_output=True, timeout=30)
-        return result.returncode == 0, json.loads(result.stdout)
-    result, payload = devlog(repo, "check", "--base", "origin/main", ok=False)
+        return result, json.loads(result.stdout)
+    return devlog(repo, "check", "--base", "origin/main", *args, ok=False)
+
+
+def check(repo):
+    result, payload = check_result(repo)
     return result.returncode == 0, payload
 
 
@@ -175,14 +179,17 @@ checks["retry_remote_matches"] = git(worker, "ls-remote", "origin", "refs/heads/
 git(worker, "fetch", "origin", "main")
 checks["check_after_retry"] = check(worker)[0]
 
-# The documented immutability owner is a merged fragment, not a folded month.
+# PRs may add fragments; the trusted fold remains the month-file writer.
 git(worker, "checkout", "-b", "month-correction")
 month.write_text(text.replace("Recorded alpha result.", "Corrected alpha result."))
 commit(worker, "Correct folded month result")
-passed, payload = check(worker)
-result_code = 0 if passed else 65
-checks["month_edit_check"] = "accepted" if passed else "rejected"
-observations["month_edit"] = {"exit_code": result_code, "check": payload}
+result, payload = check_result(worker, "--fragments-only")
+problems = payload.get("error", {}).get("details", {}).get("problems", [])
+month_rejected = result.returncode == 65 and any(
+    problem.get("kind") == "month-file-changed" for problem in problems)
+checks["month_edit_check"] = ("rejected" if month_rejected else
+                              "accepted" if result.returncode == 0 else "unexpected-rejection")
+observations["month_edit"] = {"exit_code": result.returncode, "check": payload}
 git(worker, "checkout", "main")
 git(worker, "checkout", "-b", "fragment-edit")
 today_fragment = worker / "docs/devlog/pending" / f"{TODAY.isoformat()}-today.md"

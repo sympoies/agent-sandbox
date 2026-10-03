@@ -92,13 +92,20 @@ SCRIPT
         payload = json.loads(result.stdout)
         self.assertEqual(result.returncode, 1, payload)
         self.assertEqual(payload['results'][0]['checks']['merged_fragment_edit_rejected']['status'], 'fail')
+        # Delegating structure checks while dropping the ownership flag fails.
+        check.write_text('exec devlog check --base origin/main --format json\n')
+        result = subprocess.run(args, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        self.assertEqual(result.returncode, 1, payload)
+        self.assertEqual(payload['results'][0]['checks']['month_edit_check']['status'], 'fail')
+        self.assertEqual(payload['results'][0]['checks']['merged_fragment_edit_rejected']['status'], 'pass')
         # A real delegated owner must receive the kit's explicit base input.
         check.write_text('test "${DEVLOG_CHECK_BASE:-}" = origin/main || exit 64\n'
                          'exec devlog check --base "$DEVLOG_CHECK_BASE" "$@"\n')
         result = subprocess.run(args, capture_output=True, text=True)
         payload = json.loads(result.stdout)
         self.assertEqual(result.returncode, 0, payload)
-        self.assertEqual(payload['status'], 'expected-fail')
+        self.assertEqual(payload['status'], 'pass')
 
     def test_contract_mismatch_and_missing_check_fail(self):
         for checks in ({"works": False}, {}, {"works": 1}, {"works": True, "extra": True}):

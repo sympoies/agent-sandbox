@@ -32,7 +32,7 @@ and the Ubuntu Linux x64 base digest. Source kits use exact commit SHAs.
 Workbench's nested `source` object owns the installer source pin; update it,
 the release-manifest checksum, and the paired DSH kit pin together with a new
 Workbench release. Workbench 0.2.2 retains nils-cli 1.31.1 internally for its
-hook contract; the general toolchain nils-cli pin is independently 1.31.14.
+hook contract; the general toolchain nils-cli pin is independently 1.31.16.
 
 ## M1 build and runtime acceptance
 
@@ -105,7 +105,7 @@ has already been staged in a container. Duplicate names fail. This is the
 extension hook for M2b; no private overlay or private scenario is implemented.
 
 The [devlog fragment scenario](tests/integration/devlog-fragments/expected.json)
-uses released nils-cli 1.31.14 with `DEVLOG_LAYOUT=fragments` and a local bare Git
+uses released nils-cli 1.31.16 with `DEVLOG_LAYOUT=fragments` and a local bare Git
 remote. It verifies both branch merge orders with `devlog check` after every
 merge, unchanged shared files during entry creation, a no-op fold without a
 commit, exact month entries and consumed fragments, retention of today's and
@@ -114,13 +114,12 @@ push followed by fetch, reset of the disposable clone, rerun and successful
 push preserving the concurrent entry. Commit creation and retry belong to this
 scenario's simulated fold job; `devlog fold` itself only changes files.
 
-The negative month-edit probe records the tool's actual contract: a
-structurally valid correction to a folded month file is accepted by
-`devlog check --base origin/main`. Editing a merged pending fragment is rejected
-as `fragment-modified`. Month-file policy enforcement in PRs belongs to
-[agent-runtime-kit #218](https://github.com/sympoies/agent-runtime-kit/issues/218);
-this sandbox does not claim that nils-cli rejects every month-file edit.
-See the [released tool documentation](https://github.com/sympoies/nils-cli/blob/v1.31.14/crates/devlog/README.md).
+The negative month-edit probe commits a structurally valid correction on a
+feature branch, then requires `devlog check --base origin/main --fragments-only`
+to reject it with `month-file-changed` and exit 65. Editing a merged pending
+fragment is rejected as `fragment-modified`. Ordinary `devlog check` continues
+to validate trusted folds without the PR ownership flag.
+See the [released tool documentation](https://github.com/sympoies/nils-cli/blob/v1.31.16/crates/devlog/README.md).
 
 Provider branch protection, App identity and verified or required signed
 commits cannot be tested against an offline bare remote. They remain out of
@@ -157,10 +156,9 @@ devlog scenario derives `DEVLOG_LAYOUT` from the candidate kit's shared render,
 checks the unset/off renders, and invokes its fragment-aware check owner. It
 uses `expected-candidate.json`, keeping the existing pinned scenario unchanged
 when no candidate is selected. A missing owner fails before scenario execution.
-The candidate contract records month-file rejection as an expected failure for
-[nils-cli #2082](https://github.com/sympoies/nils-cli/issues/2082); all other checks
-must pass. This remains a visible production enablement blocker, not a workaround.
-After that tool fix, an unexpected pass forces removal of the exemption.
+Both normal and candidate contracts require month-file rejection, with no
+expected-failure exemption. The candidate check owner must forward
+`--fragments-only` as well as the explicit base for that probe.
 Provider protection, App signatures, and the real fold workflow remain separate.
 
 ## History and delivery
