@@ -20,12 +20,12 @@ The following changes must pass the sandbox before reaching real hosts:
 - tmux upgrades and changes that bump multiple components together.
 
 Small single-component fixes, documentation, and UI changes may deploy directly
-when they do not change these contracts. M1 will establish installation and
+when they do not change these contracts. M1 establishes installation and
 version agreement; M2 will establish deterministic integration behavior.
 
 ## Milestones
 
-- **M1:** pinned Ubuntu image, `make build`, `make versions`, wrong-pin rejection,
+- **M1 (complete):** pinned Ubuntu image, `make build`, `make versions`, wrong-pin rejection,
   and GitHub-hosted runtime acceptance with a container-owned systemd user manager.
 - **M2:** deterministic integration tests with fake providers.
 - **M3:** `make gate CANDIDATE=<component>@<version>`.

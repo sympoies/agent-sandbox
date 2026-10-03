@@ -71,9 +71,14 @@ installed sandbox, use `sudo make versions CONTAINER=<container-id>`.
 The acceptance container is stopped and removed on exit; the prepared image
 remains available for later runs and a private overlay layer.
 
-GitHub-hosted Ubuntu CI runs the same build and rootful Podman acceptance. No
-Workbench source changes, dependency-graph changes, image publication, or host
-activation are part of this workflow.
+The local acceptance and public GitHub-hosted Ubuntu
+[CI run 37080220973](https://github.com/sympoies/agent-sandbox/actions/runs/37080220973) both pass: the official
+installer reports `finishLineHostProbe=available` and `runtimeKitDoctor=healthy`,
+all eleven component pins agree offline, and the deliberate wrong pin is
+rejected. Five unit regressions and repository conventions also pass. This
+selects runtime systemd acceptance without an upstream container-mode change.
+Workbench source and its frozen graph remain unchanged. Image publication and
+host activation require separate authorization.
 
 Keep future deterministic scenarios under
 [tests/integration](tests/integration/README.md). M3 will add candidate selection;
