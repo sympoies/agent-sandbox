@@ -5,6 +5,7 @@ import io
 import json
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import tempfile
 import unittest
@@ -44,6 +45,60 @@ class ScenarioRunnerTests(unittest.TestCase):
         status, result = self.run_scenarios("--scenario", "beta")
         self.assertEqual(status, 0, result)
         self.assertEqual([row["scenario"] for row in result["results"]], ["beta"])
+
+    def test_candidate_contract_and_explicit_path_are_used(self):
+        candidate = self.root / '.kit'
+        for owner in ('scripts/render-runtime-env.sh', 'scripts/with-runtime-env.sh', 'scripts/ci/devlog-check.sh'):
+            path = candidate / owner
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(':\n')
+        script = """python3 - <<'SCRIPT'
+import json, os
+print(json.dumps({'checks': {'candidate': bool(os.environ.get('AGENT_SANDBOX_KIT_CANDIDATE'))}}))
+SCRIPT
+"""
+        directory = self.scenario('candidate', script=script)
+        (directory / 'expected-candidate.json').write_text(json.dumps(
+            {'schema_version': 1, 'checks': {'candidate': True}, 'expected_failures': {}}))
+        status, result = self.run_scenarios('--kit-candidate', str(candidate))
+        self.assertEqual(status, 0, result)
+        self.assertEqual(result['results'][0]['checks']['candidate']['status'], 'pass')
+        self.assertEqual(self.run_scenarios()[0], 1)
+
+    def test_missing_candidate_owner_fails_before_scenario(self):
+        self.scenario('candidate')
+        status, result = self.run_scenarios('--kit-candidate', str(self.root / 'missing'))
+        self.assertEqual(status, 1, result)
+        self.assertIn('missing a devlog', result['error'])
+        self.assertEqual(result['results'], [])
+
+    def test_devlog_candidate_cannot_bypass_base_check(self):
+        if shutil.which('devlog') is None:
+            self.skipTest('Tool-backed regression runs in repository-conventions with pinned devlog')
+        candidate = self.root / '.kit'
+        scripts = candidate / 'scripts'
+        (scripts / 'ci').mkdir(parents=True)
+        (scripts / 'render-runtime-env.sh').write_text(
+            'if [ "${AGENT_RUNTIME_DEVLOG_FRAGMENTS:-0}" = 1 ]; then '
+            "printf 'export DEVLOG_LAYOUT=fragments\\n'; else printf ':\\n'; fi\n")
+        (scripts / 'with-runtime-env.sh').write_text(':\n')
+        check = scripts / 'ci/devlog-check.sh'
+        # A fake owner that accepts everything must fail the scenario.
+        check.write_text("printf '%s\\n' '{\"ok\":true}'\n")
+        args = [sys.executable, str(ROOT / 'scripts/scenarios.py'), '--root',
+                str(ROOT / 'tests/integration'), '--scenario', 'devlog-fragments',
+                '--kit-candidate', str(candidate)]
+        result = subprocess.run(args, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        self.assertEqual(result.returncode, 1, payload)
+        self.assertEqual(payload['results'][0]['checks']['merged_fragment_edit_rejected']['status'], 'fail')
+        # A real delegated owner must receive the kit's explicit base input.
+        check.write_text('test "${DEVLOG_CHECK_BASE:-}" = origin/main || exit 64\n'
+                         'exec devlog check --base "$DEVLOG_CHECK_BASE" "$@"\n')
+        result = subprocess.run(args, capture_output=True, text=True)
+        payload = json.loads(result.stdout)
+        self.assertEqual(result.returncode, 0, payload)
+        self.assertEqual(payload['status'], 'expected-fail')
 
     def test_contract_mismatch_and_missing_check_fail(self):
         for checks in ({"works": False}, {}, {"works": 1}, {"works": True, "extra": True}):
