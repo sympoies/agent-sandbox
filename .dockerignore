@@ -1,0 +1,11 @@
+*
+!Dockerfile
+!Makefile
+!manifest.json
+!scripts/
+!scripts/**
+!tests/
+!tests/**
+
+**/__pycache__
+**/*.pyc
