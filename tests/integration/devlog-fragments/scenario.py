@@ -5,7 +5,17 @@ import os
 from pathlib import Path
 import subprocess
 
-os.environ["DEVLOG_LAYOUT"] = "fragments"
+KIT = os.environ.get("AGENT_SANDBOX_KIT_CANDIDATE")
+if KIT:
+    # Derive the tool environment from the candidate kit, not a scenario override.
+    env = {**os.environ, "AGENT_RUNTIME_DEVLOG_FRAGMENTS": "1"}
+    rendered = subprocess.run(["bash", str(Path(KIT) / "scripts/render-runtime-env.sh")],
+                              env=env, text=True, capture_output=True, check=True).stdout
+    selected = subprocess.run(["bash", "-c", rendered + '\nprintf %s "$DEVLOG_LAYOUT"'],
+                              env=env, text=True, capture_output=True, check=True).stdout
+    os.environ["DEVLOG_LAYOUT"] = selected
+else:
+    os.environ["DEVLOG_LAYOUT"] = "fragments"
 ROOT = Path.cwd()
 REMOTE = ROOT / "remote.git"
 TODAY = date.today()
@@ -53,6 +63,12 @@ def entry(repo, slug, day="2001-01-01"):
 
 
 def check(repo):
+    if KIT:
+        env = {**os.environ, "DEVLOG_CHECK_BASE": "origin/main"}
+        result = subprocess.run(["bash", str(Path(KIT) / "scripts/ci/devlog-check.sh"),
+                                 "--format", "json"], cwd=repo, env=env,
+                                text=True, capture_output=True, timeout=30)
+        return result.returncode == 0, json.loads(result.stdout)
     result, payload = devlog(repo, "check", "--base", "origin/main", ok=False)
     return result.returncode == 0, payload
 
@@ -163,10 +179,10 @@ checks["check_after_retry"] = check(worker)[0]
 git(worker, "checkout", "-b", "month-correction")
 month.write_text(text.replace("Recorded alpha result.", "Corrected alpha result."))
 commit(worker, "Correct folded month result")
-result, payload = devlog(worker, "check", "--base", "origin/main", ok=False)
-passed = result.returncode == 0
+passed, payload = check(worker)
+result_code = 0 if passed else 65
 checks["month_edit_check"] = "accepted" if passed else "rejected"
-observations["month_edit"] = {"exit_code": result.returncode, "check": payload}
+observations["month_edit"] = {"exit_code": result_code, "check": payload}
 git(worker, "checkout", "main")
 git(worker, "checkout", "-b", "fragment-edit")
 today_fragment = worker / "docs/devlog/pending" / f"{TODAY.isoformat()}-today.md"
@@ -175,4 +191,16 @@ commit(worker, "Edit merged pending fragment")
 passed, payload = check(worker)
 checks["merged_fragment_edit_rejected"] = not passed and "fragment-modified" in json.dumps(payload)
 observations["fragment_edit"] = payload
+if KIT:
+    checks["kit_switch_on_selects_fragments"] = os.environ["DEVLOG_LAYOUT"] == "fragments"
+    for setting in (None, "0"):
+        env = dict(os.environ)
+        env.pop("AGENT_RUNTIME_DEVLOG_FRAGMENTS", None)
+        if setting is not None:
+            env["AGENT_RUNTIME_DEVLOG_FRAGMENTS"] = setting
+        rendered = subprocess.run(["bash", str(Path(KIT) / "scripts/render-runtime-env.sh")],
+                                  env=env, text=True, capture_output=True, check=True).stdout
+        checks["kit_switch_off_" + (setting or "unset")] = rendered == ":\n"
+    checks["kit_check_accepts_merged_fragments"] = check(seed)[0]
+    observations["kit_candidate"] = "environment render and check owner exercised"
 print(json.dumps({"checks": checks, "observations": observations}, sort_keys=True))

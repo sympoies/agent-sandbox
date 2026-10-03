@@ -4,6 +4,7 @@ DOCKER ?= docker
 PODMAN ?= podman
 SCENARIO ?= all
 SCENARIO_RESULT ?= .cache/scenario-results.json
+KIT_CANDIDATE ?=
 SCENARIO_ROOT ?=
 CONTAINER ?=
 
@@ -19,7 +20,7 @@ acceptance:
 # An extra root names scenarios already staged inside a future overlay container.
 scenario:
 	@test -n "$(CONTAINER)" || { echo 'Set CONTAINER to a booted offline sandbox.' >&2; exit 1; }
-	@bash scripts/run-scenarios.sh "$(CONTAINER)" "$(PODMAN)" "$(SCENARIO)" "$(SCENARIO_ROOT)"
+	@bash scripts/run-scenarios.sh "$(CONTAINER)" "$(PODMAN)" "$(SCENARIO)" "$(SCENARIO_ROOT)" "$(KIT_CANDIDATE)"
 
 versions:
 	@test -n "$(CONTAINER)" || { echo 'Run make acceptance, or set CONTAINER to an installed booted sandbox.' >&2; exit 1; }

@@ -140,6 +140,29 @@ Keep future deterministic scenarios under
 component artifact pins and source revisions are independent fields so those
 later scenarios can select nils-cli and agent-runtime-kit candidates together.
 
+### Candidate kit devlog wiring
+
+To verify a kit change without downloading or installing a candidate, stage its
+checkout in the pinned container and select it explicitly:
+
+```sh
+sudo podman cp /path/to/reviewed-kit "$CONTAINER:/opt/kit-candidate"
+sudo make scenario CONTAINER="$CONTAINER" SCENARIO=devlog-fragments \
+  KIT_CANDIDATE=/opt/kit-candidate
+```
+
+The runner passes only this explicit path through its isolated environment;
+`--kit-candidate` never fetches, installs, or activates runtime surfaces. The
+devlog scenario derives `DEVLOG_LAYOUT` from the candidate kit's shared render,
+checks the unset/off renders, and invokes its fragment-aware check owner. It
+uses `expected-candidate.json`, keeping the existing pinned scenario unchanged
+when no candidate is selected. A missing owner fails before scenario execution.
+The candidate contract records month-file rejection as an expected failure for
+[nils-cli #2082](https://github.com/sympoies/nils-cli/issues/2082); all other checks
+must pass. This remains a visible production enablement blocker, not a workaround.
+After that tool fix, an unexpected pass forces removal of the exemption.
+Provider protection, App signatures, and the real fold workflow remain separate.
+
 ## History and delivery
 
 Record completed changes with `devlog new`, refresh the month index with

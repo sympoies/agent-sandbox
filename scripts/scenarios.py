@@ -11,10 +11,13 @@ import sys
 import tempfile
 
 
-def run_scenario(name, directory, timeout):
+def run_scenario(name, directory, timeout, kit_candidate=None):
     result = {"scenario": name, "status": "fail"}
     try:
-        contract = json.loads((directory / "expected.json").read_text())
+        contract_path = directory / "expected.json"
+        if kit_candidate is not None and (directory / "expected-candidate.json").is_file():
+            contract_path = directory / "expected-candidate.json"
+        contract = json.loads(contract_path.read_text())
         if not isinstance(contract, dict) or contract.get("schema_version") != 1:
             raise ValueError("unsupported contract schema_version")
         expected = contract.get("checks")
@@ -32,6 +35,8 @@ def run_scenario(name, directory, timeout):
             home.mkdir()
             env = {"PATH": os.environ["PATH"], "HOME": str(home), "TMPDIR": work,
                    "LANG": "C.UTF-8", "TZ": "UTC", "GIT_CONFIG_NOSYSTEM": "1"}
+            if kit_candidate is not None:
+                env["AGENT_SANDBOX_KIT_CANDIDATE"] = str(kit_candidate)
             with subprocess.Popen(["bash", str(directory / "run.sh")], cwd=work,
                                   env=env, text=True, stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE, start_new_session=True) as process:
@@ -74,6 +79,8 @@ def main():
     parser.add_argument("--scenario", default="all")
     parser.add_argument("--timeout", type=float, default=120)
     parser.add_argument("--require-sandbox", action="store_true")
+    parser.add_argument("--kit-candidate", type=Path,
+                        help="Already-staged kit checkout; no fetch or install")
     args = parser.parse_args()
     report = {"schema_version": "agent-sandbox.scenarios.v1", "status": "fail", "results": []}
     try:
@@ -84,6 +91,11 @@ def main():
                 raise ValueError("scenarios require disconnected container networking")
         if args.timeout <= 0:
             raise ValueError("timeout must be positive")
+        if args.kit_candidate is not None:
+            args.kit_candidate = args.kit_candidate.resolve()
+            for owner in ("scripts/render-runtime-env.sh", "scripts/with-runtime-env.sh", "scripts/ci/devlog-check.sh"):
+                if not (args.kit_candidate / owner).is_file():
+                    raise ValueError("kit candidate is missing a devlog environment/check owner")
         scenarios = {}
         for root in args.root:
             if not root.is_dir():
@@ -97,7 +109,7 @@ def main():
         selected = sorted(scenarios) if args.scenario == "all" else [args.scenario]
         if not selected or any(name not in scenarios for name in selected):
             raise ValueError("no scenarios found or unknown selection")
-        report["results"] = [run_scenario(name, scenarios[name], args.timeout) for name in selected]
+        report["results"] = [run_scenario(name, scenarios[name], args.timeout, args.kit_candidate) for name in selected]
         statuses = {row["status"] for row in report["results"]}
         report["status"] = "fail" if "fail" in statuses else (
             "expected-fail" if "expected-fail" in statuses else "pass")
