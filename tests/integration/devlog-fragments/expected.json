@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "checks": {
+    "noop_no_commit": true,
+    "noop_clean_tree": true,
+    "alpha_isolated_fragment": true,
+    "beta_isolated_fragment": true,
+    "merge_alpha-beta_alpha": true,
+    "merge_alpha-beta_beta": true,
+    "merge_beta-alpha_beta": true,
+    "merge_beta-alpha_alpha": true,
+    "normal_fold_merge-alpha-beta": true,
+    "normal_fold_merge-beta-alpha": true,
+    "idempotent_merge-alpha-beta": true,
+    "idempotent_merge-beta-alpha": true,
+    "deterministic_fold": true,
+    "stale_push_rejected": true,
+    "retry_fetched_tip": true,
+    "retry_fold_push": true,
+    "retry_preserves_all_entries": true,
+    "retry_remote_matches": true,
+    "check_after_retry": true,
+    "month_edit_check": "accepted",
+    "merged_fragment_edit_rejected": true
+  },
+  "expected_failures": {}
+}

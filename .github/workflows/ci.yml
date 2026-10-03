@@ -27,7 +27,7 @@ jobs:
           echo "$RUNNER_TEMP/nils-cli/bin" >> "$GITHUB_PATH"
       - name: Repository conventions
         run: .agents/scripts/pre-pr.sh
-  m1-runtime-acceptance:
+  sandbox-acceptance:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -38,5 +38,12 @@ jobs:
         run: make test
       - name: Build the authenticated pinned image
         run: make build
-      - name: Boot confined systemd and accept the official installation
+      - name: Boot confined systemd, accept installation, and run offline scenarios
         run: sudo make acceptance
+      - name: Preserve the machine-readable scenario result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: scenario-results
+          path: .cache/scenario-results.json
+          if-no-files-found: warn
