@@ -3,6 +3,7 @@ set -euo pipefail
 image=${1:-agent-sandbox:local}
 docker=${2:-docker}
 podman=${3:-podman}
+scenario_result=${4:-.cache/scenario-results.json}
 # Podman owns a writable delegated cgroup subtree in its private namespace.
 # No host cgroup bind, systemd socket, elevated capabilities, or privileged mode.
 [[ $("$podman" info --format '{{.Host.CgroupsVersion}}') == v2 ]] || {
@@ -45,4 +46,11 @@ fi
 "$podman" network disconnect podman "$container"
 make --no-print-directory versions CONTAINER="$container" PODMAN="$podman"
 make --no-print-directory test-wrong-pin CONTAINER="$container" PODMAN="$podman"
-echo 'M1 runtime acceptance passed.'
+mkdir -p "$(dirname "$scenario_result")"
+if make --silent scenario CONTAINER="$container" PODMAN="$podman" > "$scenario_result"; then
+  cat "$scenario_result"
+else
+  cat "$scenario_result"
+  exit 1
+fi
+echo 'Sandbox runtime and scenario acceptance passed.'

@@ -32,7 +32,7 @@ and the Ubuntu Linux x64 base digest. Source kits use exact commit SHAs.
 Workbench's nested `source` object owns the installer source pin; update it,
 the release-manifest checksum, and the paired DSH kit pin together with a new
 Workbench release. Workbench 0.2.2 retains nils-cli 1.31.1 internally for its
-hook contract; the general toolchain nils-cli pin is independently 1.31.13.
+hook contract; the general toolchain nils-cli pin is independently 1.31.14.
 
 ## M1 build and runtime acceptance
 
@@ -79,6 +79,61 @@ rejected. Five unit regressions and repository conventions also pass. This
 selects runtime systemd acceptance without an upstream container-mode change.
 Workbench source and its frozen graph remain unchanged. Image publication and
 host activation require separate authorization.
+
+## M2 offline scenarios
+
+`make acceptance` now also runs every public scenario after installation and
+network disconnection. The `sandbox-acceptance` hosted CI job preserves its
+machine-readable result as the `scenario-results` artifact. Local acceptance
+writes `.cache/scenario-results.json`; set `SCENARIO_RESULT` to choose another
+output file. A failing contract makes acceptance fail.
+
+For an independently booted, installed sandbox whose network is disconnected:
+
+```sh
+sudo make scenario CONTAINER=<container-id> SCENARIO=devlog-fragments
+sudo make scenario CONTAINER=<container-id>  # all public scenarios
+```
+
+The target emits one `agent-sandbox.scenarios.v1` JSON object on stdout; script
+diagnostics go to stderr. It requires systemd as PID 1 and only the loopback
+interface. Every scenario runs with a disposable working directory, isolated
+HOME and Git configuration, and a 120-second timeout. Its directory owns
+`run.sh` and `expected.json`; see the [scenario contract](tests/integration/README.md).
+`SCENARIO_ROOT=<container-side-directory>` adds a second set of scenarios that
+has already been staged in a container. Duplicate names fail. This is the
+extension hook for M2b; no private overlay or private scenario is implemented.
+
+The [devlog fragment scenario](tests/integration/devlog-fragments/expected.json)
+uses released nils-cli 1.31.14 with `DEVLOG_LAYOUT=fragments` and a local bare Git
+remote. It verifies both branch merge orders with `devlog check` after every
+merge, unchanged shared files during entry creation, a no-op fold without a
+commit, exact month entries and consumed fragments, retention of today's and
+future fragments, deterministic and idempotent folding, and a real rejected
+push followed by fetch, reset of the disposable clone, rerun and successful
+push preserving the concurrent entry. Commit creation and retry belong to this
+scenario's simulated fold job; `devlog fold` itself only changes files.
+
+The negative month-edit probe records the tool's actual contract: a
+structurally valid correction to a folded month file is accepted by
+`devlog check --base origin/main`. Editing a merged pending fragment is rejected
+as `fragment-modified`. Month-file policy enforcement in PRs belongs to
+[agent-runtime-kit #218](https://github.com/sympoies/agent-runtime-kit/issues/218);
+this sandbox does not claim that nils-cli rejects every month-file edit.
+See the [released tool documentation](https://github.com/sympoies/nils-cli/blob/v1.31.14/crates/devlog/README.md).
+
+Provider branch protection, App identity and verified or required signed
+commits cannot be tested against an offline bare remote. They remain out of
+scope here and must pass in #218's real provider test repository before
+rollout. Scenario fixture commits use an explicitly synthetic identity and
+are unsigned. No runtime-kit policy or CI fold rollout is included in M2.
+
+If a scenario exposes a nils-cli defect, reproduce it without a workaround,
+file an English upstream issue, and map that check to the issue URL in
+`expected_failures`. Expected failures remain visible in JSON; an unexpected
+pass fails so the exemption must be reviewed and removed after a fix. Crashes,
+missing checks and malformed output always fail. Report the issue to the
+maintainer through the private coordination mailbox.
 
 Keep future deterministic scenarios under
 [tests/integration](tests/integration/README.md). M3 will add candidate selection;
