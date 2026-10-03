@@ -5,6 +5,7 @@ import io
 import json
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import tempfile
 import unittest
@@ -72,6 +73,8 @@ SCRIPT
         self.assertEqual(result['results'], [])
 
     def test_devlog_candidate_cannot_bypass_base_check(self):
+        if shutil.which('devlog') is None:
+            self.skipTest('Tool-backed regression runs in repository-conventions with pinned devlog')
         candidate = self.root / '.kit'
         scripts = candidate / 'scripts'
         (scripts / 'ci').mkdir(parents=True)
