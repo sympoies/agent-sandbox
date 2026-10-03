@@ -5,9 +5,9 @@
   "ubuntu_snapshot": "20261001T000000Z",
   "components": {
     "nils-cli": {
-      "version": "1.31.14",
-      "url": "https://github.com/sympoies/nils-cli/releases/download/v1.31.14/nils-cli-v1.31.14-x86_64-unknown-linux-gnu.tar.gz",
-      "sha256": "facda9a4af8980df8b929af41e41e5bd4d9f34c0134599ca564d416e55a3fdad"
+      "version": "1.31.16",
+      "url": "https://github.com/sympoies/nils-cli/releases/download/v1.31.16/nils-cli-v1.31.16-x86_64-unknown-linux-gnu.tar.gz",
+      "sha256": "366b9a33448ce025355802368deffbfde820ea7606b1ede88ff88c9eecd235e7"
     },
     "node": {
       "version": "26.10.0",

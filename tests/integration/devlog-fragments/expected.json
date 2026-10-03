@@ -20,7 +20,7 @@
     "retry_preserves_all_entries": true,
     "retry_remote_matches": true,
     "check_after_retry": true,
-    "month_edit_check": "accepted",
+    "month_edit_check": "rejected",
     "merged_fragment_edit_rejected": true
   },
   "expected_failures": {}

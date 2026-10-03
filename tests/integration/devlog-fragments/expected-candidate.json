@@ -27,7 +27,5 @@
     "kit_switch_off_0": true,
     "kit_check_accepts_merged_fragments": true
   },
-  "expected_failures": {
-    "month_edit_check": "https://github.com/sympoies/nils-cli/issues/2082"
-  }
+  "expected_failures": {}
 }
