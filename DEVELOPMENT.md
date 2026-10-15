@@ -3,16 +3,10 @@
 ## Setup and validation
 
 Install Python 3.12 or newer and the nils-cli version recorded in
-[manifest.json](manifest.json). The development gate needs `agent-docs` and `devlog`
+[manifest.json](manifest.json). The development gate needs `devlog`
 from that release, Docker with BuildKit, Make, and Podman on Linux with cgroup
 v2. Runtime acceptance uses rootful Podman; the invoking role needs permission
 to run it (for example through sudo).
-
-Before editing, run:
-
-```sh
-agent-docs --docs-home "$PWD" preflight --intent project-dev
-```
 
 Before PR delivery, run:
 
@@ -20,8 +14,9 @@ Before PR delivery, run:
 .agents/scripts/pre-pr.sh
 ```
 
-This checks manifest syntax, development-log structure, and the strict project
-docs audit. The maintainer workflow invokes the pre-PR script through
+This checks manifest syntax, the test suite, and development-log structure.
+[VALIDATION.toml](VALIDATION.toml) declares it as the finish-line validation
+contract. The maintainer workflow invokes the pre-PR script through
 `agent-run exec`. CI runs the same script on GitHub-hosted Ubuntu runners after
 installing the checksum-pinned official nils-cli archive.
 

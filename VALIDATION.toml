@@ -1,0 +1,8 @@
+# Finish-line validation contract. agent-hook and the agent-runtime-kit
+# finish-line hooks block a turn that edited files until these commands pass.
+
+[[validation]]
+context = "project-dev"
+commands = [".agents/scripts/pre-pr.sh"]
+marker = ".cache/agent-validation/project-dev.ok"
+description = "Validate manifest syntax, tests, and development-log structure."
