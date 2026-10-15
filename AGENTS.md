@@ -7,8 +7,9 @@ editing; `manifest.json` owns exact component and artifact pins.
   private deployment identities, paths, accounts, credentials, or topology.
 - Preserve unrelated work. Use bounded, reversible changes and meaningful
   regression tests for observable behavior.
-- Run `agent-docs preflight --intent project-dev` when available. Run
-  `.agents/scripts/pre-pr.sh` before delivery.
+- Record completed changes in the [development log](docs/devlog/README.md).
+  Run `.agents/scripts/pre-pr.sh` before delivery; `VALIDATION.toml` declares
+  it as the finish-line validation.
 - Use signed semantic commits in managed feature worktrees and the governed
   PR workflow. Merge only after required CI and review pass.
 - This repository does not publish images or releases automatically. Publication
