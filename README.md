@@ -1,5 +1,15 @@
 # agent-sandbox
 
+> **Archived.** This repository is no longer maintained. Its pinned toolchain
+> was last updated in October 2026. Open work moved:
+>
+> - Serve and harness no-TUI regressions:
+>   [sympoies/nils-cli#3598](https://github.com/sympoies/nils-cli/issues/3598).
+> - Clean Linux acceptance of the published server stack:
+>   [sympoies/salon#440](https://github.com/sympoies/salon/issues/440).
+>
+> The history below remains for reference.
+
 A Linux container project that pins an exact agent toolchain combination and
 validates it before deployment to real hosts. It may later become an agent
 working sandbox. Linux x64 is the initial target; macOS is outside the scope.
